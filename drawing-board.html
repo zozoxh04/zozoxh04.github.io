@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Interactive Drawing Board</title>
+    <style>
+        :root {
+            --grid-cols: 32;
+            --grid-rows: 32;
+            --cell-size: 20px;
+            --primary-color: #66fcf1;
+            --bg-color: #0b0c10;
+            --control-bg: #1f2833;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bg-color);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            padding: 2rem;
+        }
+
+        .container {
+            display: flex;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .drawing-board {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-cols), var(--cell-size));
+            grid-template-rows: repeat(var(--grid-rows), var(--cell-size));
+            background-color: #1f2833;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(102, 252, 241, 0.2);
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            border: 1px solid #2c3440;
+            transition: background-color 0.2s;
+        }
+
+        .cell:hover {
+            background-color: rgba(102, 252, 241, 0.3);
+        }
+
+        .controls {
+            background: var(--control-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            min-width: 200px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .color-picker {
+            width: 100%;
+            height: 40px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 0.8rem 1rem;
+            border: none;
+            border-radius: 4px;
+            background: var(--primary-color);
+            color: var(--bg-color);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 252, 241, 0.3);
+        }
+
+        .tools {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .tool-btn {
+            padding: 0.5rem;
+            border: 1px solid var(--primary-color);
+            background: transparent;
+            color: var(--primary-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tool-btn.active {
+            background: var(--primary-color);
+            color: var(--bg-color);
+        }
+
+        .size-slider {
+            width: 100%;
+            margin: 1rem 0;
+        }
+
+        .patterns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        .pattern {
+            width: 100%;
+            aspect-ratio: 1;
+            border: 1px solid var(--primary-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pattern:hover {
+            transform: scale(1.1);
+        }
+
+        .animation-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .effects-list {
+            margin-top: 1rem;
+        }
+
+        .effect-item {
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            background: rgba(102, 252, 241, 0.1);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .effect-item:hover {
+            background: rgba(102, 252, 241, 0.2);
+        }
+
+    </style>
+</head>
+<body>
+    <h1 style="margin-bottom: 2rem; color: var(--primary-color);">Interactive Drawing Board</h1>
+
+    
+    <div class="container">
+        <div class="drawing-board" id="board"></div>
+        
+        <div class="controls">
+            <input type="color" class="color-picker" id="colorPicker" value="#66fcf1">
+            
+            <div class="tools">
+                <button class="tool-btn active" data-tool="pen">Pen</button>
+                <button class="tool-btn" data-tool="eraser">Eraser</button>
+                <button class="tool-btn" data-tool="fill">Fill</button>
+                <button class="tool-btn" data-tool="pattern">Pattern</button>
+            </div>
+
+            <div>
+                <label for="sizeSlider">Brush Size</label>
+                <input type="range" id="sizeSlider" class="size-slider" min="1" max="5" value="1">
+            </div>
+
+            <div class="patterns">
+                <div class="pattern" data-pattern="checkerboard"></div>
+                <div class="pattern" data-pattern="diagonal"></div>
+                <div class="pattern" data-pattern="spiral"></div>
+            </div>
+
+            <div class="animation-controls">
+                <button class="btn" id="animateBtn">Animate Drawing</button>
+                <div class="effects-list">
+                    <div class="effect-item" data-effect="wave">Wave Effect</div>
+                    <div class="effect-item" data-effect="ripple">Ripple Effect</div>
+                    <div class="effect-item" data-effect="rainbow">Rainbow Wave</div>
+                </div>
+            </div>
+
+            <button class="btn" id="clearBtn">Clear Board</button>
+            <button class="btn" id="saveBtn">Save Drawing</button>
+        </div>
+    </div>
+
+    <script>
+        class DrawingBoard {
+            constructor() {
+                this.board = document.getElementById('board');
+                this.colorPicker = document.getElementById('colorPicker');
+                this.sizeSlider = document.getElementById('sizeSlider');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.saveBtn = document.getElementById('saveBtn');
+                this.animateBtn = document.getElementById('animateBtn');
+                this.isDrawing = false;
+                this.currentTool = 'pen';
+                this.currentColor = this.colorPicker.value;
+                this.brushSize = 1;
+                this.cells = [];
+                
+                this.initializeBoard();
+                this.setupEventListeners();
+            }
+
+            initializeBoard() {
+                const rows = getComputedStyle(document.documentElement).getPropertyValue('--grid-rows');
+                const cols = getComputedStyle(document.documentElement).getPropertyValue('--grid-cols');
+
+                for (let i = 0; i < (rows * cols); i++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.index = i;
+                    this.board.appendChild(cell);
+                    this.cells.push(cell);
+                }
+            }
+
+            setupEventListeners() {
+                this.board.addEventListener('mousedown', () => this.isDrawing = true);
+                this.board.addEventListener('mouseup', () => this.isDrawing = false);
+                this.board.addEventListener('mouseleave', () => this.isDrawing = false);
+
+                this.board.addEventListener('mouseover', (e) => {
+                    if (this.isDrawing && e.target.classList.contains('cell')) {
+                        this.draw(e.target);
+                    }
+                });
+
+                this.board.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('cell')) {
+                        this.draw(e.target);
+                    }
+                });
+
+                this.colorPicker.addEventListener('input', (e) => {
+                    this.currentColor = e.target.value;
+                });
+
+                this.sizeSlider.addEventListener('input', (e) => {
+                    this.brushSize = parseInt(e.target.value);
+                });
+
+                document.querySelectorAll('.tool-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelector('.tool-btn.active').classList.remove('active');
+                        btn.classList.add('active');
+                        this.currentTool = btn.dataset.tool;
+                    });
+                });
+
+                this.clearBtn.addEventListener('click', () => this.clearBoard());
+                this.saveBtn.addEventListener('click', () => this.saveDrawing());
+                this.animateBtn.addEventListener('click', () => this.animateDrawing());
+
+                document.querySelectorAll('.effect-item').forEach(effect => {
+                    effect.addEventListener('click', () => {
+                        this.applyEffect(effect.dataset.effect);
+                    });
+                });
+            }
+
+            draw(cell) {
+                if (this.currentTool === 'eraser') {
+                    this.applyBrush(cell, null);
+                } else if (this.currentTool === 'fill') {
+                    this.fillArea(cell);
+                } else if (this.currentTool === 'pattern') {
+                    this.drawPattern(cell);
+                } else {
+                    this.applyBrush(cell, this.currentColor);
+                }
+            }
+
+            applyBrush(centerCell, color) {
+                const index = parseInt(centerCell.dataset.index);
+                const cols = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-cols'));
+                
+                for (let y = -this.brushSize + 1; y < this.brushSize; y++) {
+                    for (let x = -this.brushSize + 1; x < this.brushSize; x++) {
+                        const targetIndex = index + (y * cols) + x;
+                        if (targetIndex >= 0 && targetIndex < this.cells.length) {
+                            const targetCell = this.cells[targetIndex];
+                            if (Math.abs(x) + Math.abs(y) < this.brushSize) {
+                                targetCell.style.backgroundColor = color;
+                            }
+                        }
+                    }
+                }
+            }
+
+            fillArea(startCell) {
+                const targetColor = startCell.style.backgroundColor;
+                const newColor = this.currentColor;
+                const stack = [startCell];
+                const cols = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-cols'));
+
+                while (stack.length) {
+                    const cell = stack.pop();
+                    const index = parseInt(cell.dataset.index);
+
+                    if (cell.style.backgroundColor === targetColor) {
+                        cell.style.backgroundColor = newColor;
+
+                        // Check neighbors
+                        const neighbors = [
+                            index - 1, // left
+                            index + 1, // right
+                            index - cols, // up
+                            index + cols  // down
+                        ];
+
+                        for (let neighborIndex of neighbors) {
+                            if (neighborIndex >= 0 && neighborIndex < this.cells.length) {
+                                const neighborCell = this.cells[neighborIndex];
+                                if (neighborCell.style.backgroundColor === targetColor) {
+                                    stack.push(neighborCell);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            drawPattern(cell) {
+                const index = parseInt(cell.dataset.index);
+                const cols = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-cols'));
+                const pattern = [
+                    [1, 1, 1],
+                    [1, 0, 1],
+                    [1, 1, 1]
+                ];
+
+                for (let y = 0; y < pattern.length; y++) {
+                    for (let x = 0; x < pattern[0].length; x++) {
+                        const targetIndex = index + (y * cols) + x;
+                        if (targetIndex >= 0 && targetIndex < this.cells.length && pattern[y][x]) {
+                            this.cells[targetIndex].style.backgroundColor = this.currentColor;
+                        }
+                    }
+                }
+            }
+
+            clearBoard() {
+                this.cells.forEach(cell => {
+                    cell.style.backgroundColor = '';
+                });
+            }
+
+            saveDrawing() {
+                const link = document.createElement('a');
+                link.download = 'drawing.png';
+                
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const cellSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cell-size'));
+                const cols = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-cols'));
+                const rows = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-rows'));
+                
+                canvas.width = cols * cellSize;
+                canvas.height = rows * cellSize;
+                
+                this.cells.forEach((cell, index) => {
+                    const x = (index % cols) * cellSize;
+                    const y = Math.floor(index / cols) * cellSize;
+                    
+                    ctx.fillStyle = cell.style.backgroundColor || '#1f2833';
+                    ctx.fillRect(x, y, cellSize, cellSize);
+                });
+                
+                link.href = canvas.toDataURL();
+                link.click();
+            }
+
+            animateDrawing() {
+                let index = 0;
+                const interval = setInterval(() => {
+                    if (index < this.cells.length) {
+                        const cell = this.cells[index];
+                        if (!cell.style.backgroundColor) {
+                            cell.style.backgroundColor = this.currentColor;
+                        }
+                        index++;
+                    } else {
+                        clearInterval(interval);
+                    }
+                }, 10);
+            }
+
+            applyEffect(effectType) {
+                switch(effectType) {
+                    case 'wave':
+                        this.applyWaveEffect();
+                        break;
+                    case 'ripple':
+                        this.applyRippleEffect();
+                        break;
+                    case 'rainbow':
+                        this.applyRainbowEffect();
+                        break;
+                }
+            }
+
+            applyWaveEffect() {
+                const cols = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-cols'));
+                let phase = 0;
+                
+                const animate = () => {
+                    this.cells.forEach((cell, index) => {
+                        const x = index % cols;
+                        const y = Math.floor(index / cols);
+                        const offset = Math.sin(x * 0.2 + phase) * 2;
+                        
+                        if (Math.abs(y - (cols/2 + offset)) < 2) {
+                            cell.style.backgroundColor = this.currentColor;
+                        } else {
+                            cell.style.backgroundColor = '';
+                        }
+                    });
+                    
+                    phase += 0.1;
+                    if (phase < Math.PI * 4) {
+                        requestAnimationFrame(animate);
+                    }
+                };
+                
+                animate();
+            }
+
+            applyRippleEffect() {
+                const cols = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-cols'));
+                const center = this.cells.length / 2 + cols / 2;
+                let radius = 0;
+                
+                const animate = () => {
+                    this.cells.forEach((cell, index) => {
+                        const dx = (index % cols) - (center % cols);
+                        const dy = Math.floor(index / cols) - Math.floor(center / cols);
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (Math.abs(distance - radius) < 2) {
+                            cell.style.backgroundColor = this.currentColor;
+                        } else {
+                            cell.style.backgroundColor = '';
+                        }
+                    });
+                    
+                    radius += 0.5;
+                    if (radius < cols) {
+                        requestAnimationFrame(animate);
+                    }
+                };
+                
+                animate();
+            }
+
+            applyRainbowEffect() {
+                const cols = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-cols'));
+                let hue = 0;
+                
+                const animate = () => {
+                    this.cells.forEach((cell, index) => {
+                        const x = index % cols;
+                        const y = Math.floor(index / cols);
+                        const h = (hue + (x + y) * 5) % 360;
+                        cell.style.backgroundColor = `hsl(${h}, 80%, 60%)`;
+                    });
+                    
+                    hue = (hue + 2) % 360;
+                    if (hue !== 0) {
+                        requestAnimationFrame(animate);
+                    }
+                };
+                
+                animate();
+            }
+        }
+
+        // Initialize the drawing board
+        const board = new DrawingBoard();
+    </script>
+</body>
+</html>
