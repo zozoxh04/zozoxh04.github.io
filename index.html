@@ -10,13 +10,16 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     :root {
-      --bg: #000000;
+      --bg: #0a0910;
       --text: #f5f5f7;
       --text-secondary: #86868b;
-      --accent: #0071e3;
-      --accent-hover: #0077ed;
-      --card-bg: #1d1d1f;
+      --accent: #ff69b4;
+      --accent-hover: #ff85c2;
+      --card-bg: #1a1525;
       --border: rgba(255,255,255,0.1);
+      --gradient-1: linear-gradient(135deg, #ff69b4 0%, #b24592 100%);
+      --gradient-2: linear-gradient(135deg, #b24592 0%, #ff69b4 100%);
+      --gradient-3: linear-gradient(135deg, #ff85c2 0%, #ff69b4 100%);
     }
     
     body {
@@ -99,10 +102,10 @@
       font-weight: 700;
       letter-spacing: -2px;
       margin-bottom: 1.5rem;
-      background: linear-gradient(135deg, #f5f5f7 0%, #86868b 100%);
+      background: linear-gradient(135deg, #fff 0%, #ff69b4 100%);
       -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
       background-clip: text;
+      -webkit-text-fill-color: transparent;
       opacity: 0;
       animation: fadeInUp 1s forwards 0.2s;
     }
@@ -164,8 +167,10 @@
       height: 4px;
       background: var(--accent);
       border-radius: 50%;
-      opacity: 0.3;
+      opacity: 0.2;
       animation: float 20s infinite;
+      filter: blur(1px);
+      box-shadow: 0 0 8px var(--accent);
     }
     
     @keyframes float {
@@ -234,6 +239,9 @@
       border: 1px solid var(--border);
       cursor: pointer;
       position: relative;
+      text-decoration: none;
+      color: var(--text);
+      display: block;
     }
     
     .project-card:hover {
@@ -436,22 +444,43 @@
     
     .contact-card {
       background: var(--card-bg);
-      padding: 2.5rem;
+      padding: 2.5rem 1.5rem;
       border-radius: 20px;
       border: 1px solid var(--border);
       text-align: center;
       transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
     }
     
     .contact-card:hover {
       transform: translateY(-8px);
       border-color: var(--accent);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      box-shadow: 0 20px 40px rgba(255,105,180,0.15);
+    }
+    
+    .contact-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--gradient-1);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .contact-card:hover::before {
+      opacity: 1;
     }
     
     .contact-card i {
       font-size: 2.5rem;
-      color: var(--accent);
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
       margin-bottom: 1.5rem;
     }
     
@@ -464,6 +493,8 @@
       color: var(--text-secondary);
       text-decoration: none;
       transition: color 0.3s;
+      font-size: 0.9rem;
+      word-break: break-word;
     }
     
     .contact-card a:hover {
@@ -564,53 +595,53 @@
     </div>
     
     <div class="projects-grid">
-      <div class="project-card">
+      <a href="https://java-script-solar-system-ffrmz7ymh-zahra-s-projects-913aa7d2.vercel.app" target="_blank" class="project-card">
         <div class="project-icon">
-          <i class="fas fa-robot"></i>
+          <i class="fa-solid fa-satellite"></i>
         </div>
         <div class="project-content">
-          <h3>AI Customer Service Bot</h3>
-          <p>Intelligent chatbot leveraging machine learning to automate customer support for banking systems with natural language processing capabilities.</p>
+          <h3>Solar System Simulation</h3>
+          <p>Interactive 3D simulation of our solar system featuring realistic planet movements, orbital paths, and detailed textures. Built with Three.js for immersive space exploration.</p>
           <div class="tech-stack">
-            <span class="tech-tag">Python</span>
-            <span class="tech-tag">Flask</span>
-            <span class="tech-tag">scikit-learn</span>
-            <span class="tech-tag">NLP</span>
-          </div>
-        </div>
-      </div>
-      
-      <div class="project-card">
-        <div class="project-icon">
-          <i class="fas fa-shield-alt"></i>
-        </div>
-        <div class="project-content">
-          <h3>Security Testing Suite</h3>
-          <p>Comprehensive penetration testing framework that identified 15+ critical vulnerabilities in enterprise banking infrastructure.</p>
-          <div class="tech-stack">
-            <span class="tech-tag">Python</span>
-            <span class="tech-tag">SQL</span>
-            <span class="tech-tag">OWASP</span>
-            <span class="tech-tag">Security</span>
-          </div>
-        </div>
-      </div>
-      
-      <div class="project-card">
-        <div class="project-icon">
-          <i class="fas fa-code"></i>
-        </div>
-        <div class="project-content">
-          <h3>Interactive Portfolio</h3>
-          <p>Modern, responsive portfolio featuring scroll-based animations, parallax effects, and premium Apple-inspired design aesthetics.</p>
-          <div class="tech-stack">
-            <span class="tech-tag">HTML5</span>
-            <span class="tech-tag">CSS3</span>
             <span class="tech-tag">JavaScript</span>
-            <span class="tech-tag">Animations</span>
+            <span class="tech-tag">Three.js</span>
+            <span class="tech-tag">HTML</span>
+            <span class="tech-tag">CSS</span>
           </div>
         </div>
-      </div>
+      </a>
+      
+      <a href="https://github.com/zozoxh04/BlockchainAssignment" target="_blank" class="project-card">
+        <div class="project-icon">
+          <i class="fas fa-link"></i>
+        </div>
+        <div class="project-content">
+          <h3>Blockchain Technology</h3>
+          <p>Implementation of blockchain concepts including distributed ledger technology, proof of work consensus mechanism, and secure transaction handling.</p>
+          <div class="tech-stack">
+            <span class="tech-tag">C#</span>
+            <span class="tech-tag">Blockchain</span>
+            <span class="tech-tag">Cryptography</span>
+          </div>
+        </div>
+      </a>
+      
+      <a href="https://github.com/zozoxh04/VR-Futuristic-Game" target="_blank" class="project-card">
+        <div class="project-icon">
+          <i class="fas fa-vr-cardboard"></i>
+        </div>
+        <div class="project-content">
+          <h3>Futuristic VR Game</h3>
+          <p>Immersive virtual reality experience with futuristic environments, custom shaders, and advanced graphics programming for next-gen gaming.</p>
+          <div class="tech-stack">
+            <span class="tech-tag">C#</span>
+            <span class="tech-tag">C++</span>
+            <span class="tech-tag">ShaderLab</span>
+            <span class="tech-tag">HLSL</span>
+            <span class="tech-tag">Objective-C++</span>
+          </div>
+        </div>
+      </a>
     </div>
   </section>
 
